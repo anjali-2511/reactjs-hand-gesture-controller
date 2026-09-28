@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { classifyGesture } from "./gestures";
 import {
   FilesetResolver,
   HandLandmarker,
@@ -13,6 +14,7 @@ function App() {
   const canvasRef = useRef(null);
   const [error, setError] = useState("");
   const [status, setStatus] = useState("Loading hand model...");
+  const [gesture, setGesture] = useState("None");
 
   // Camera (from Step 2)
   useEffect(() => {
@@ -83,8 +85,10 @@ function App() {
               radius: 4,
             });
           }
+          setGesture(classifyGesture(result.landmarks[0]));
         } else {
           setStatus("No hand detected");
+          setGesture("None");
         }
       }
 
@@ -139,6 +143,7 @@ function App() {
 
       {error && <p style={{ color: "red" }}>{error}</p>}
       <p>{status}</p>
+       <h2>Gesture: {gesture}</h2> 
 
       <div
         style={{

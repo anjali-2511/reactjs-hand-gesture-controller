@@ -94,3 +94,27 @@ Loaded the MediaPipe Hand Landmarker in the browser and ran it on every webcam f
 ### Result
 
 A green hand skeleton with red points follows the hand in real time, and a status message shows whether a hand is detected.
+
+
+
+
+- [x] Step 5: Detect gestures (open palm, fist, pinch)
+
+## Step 5: Detect Gestures  
+
+### What was done
+
+Created `src/gestures.js` with a `classifyGesture(landmarks)` function that turns the 21 hand landmarks into a gesture name, and displayed it live in the UI.
+
+### Key points
+
+- Gestures are simple geometry on the landmark points, with no extra AI model.
+- A finger is extended if its tip is farther from the wrist than its middle joint (PIP).
+- Pinch is detected when the thumb tip (4) and index tip (8) are close together.
+- Distances are divided by hand size (wrist to middle knuckle), so detection works at any distance from the camera.
+- Coordinates are multiplied by canvas width and height before measuring, because normalized values are not square.
+- Pinch is checked first, then the extended fingers are counted: 4 is Open Palm, 0 is Fist, index only is Pointing.
+
+### Result
+
+The app shows the current gesture (Open Palm, Fist, Pinch, Pointing or Unknown) in real time.
