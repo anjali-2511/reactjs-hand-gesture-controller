@@ -5,6 +5,7 @@ import {
   DrawingUtils,
 } from "@mediapipe/tasks-vision";
 import { classifyGesture } from "./gestures";
+ 
 
 const WIDTH = 640;
 const HEIGHT = 480;
