@@ -118,3 +118,24 @@ Created `src/gestures.js` with a `classifyGesture(landmarks)` function that turn
 ### Result
 
 The app shows the current gesture (Open Palm, Fist, Pinch, Pointing or Unknown) in real time.
+
+- [x] Step 6: Control something with gestures
+
+## Step 6: Control Something with Gestures 
+
+### What was done
+
+Stabilized gesture detection and used gestures to control a slideshow, plus a pointer dot that follows the index fingertip.
+
+### Key points
+
+- Debouncing: a gesture is accepted only after it stays the same for 5 frames in a row (`STABLE_FRAMES`), which removes flicker.
+- Refs (`useRef`) hold the per-frame counters so they don't trigger re-renders.
+- Actions run only when the stable gesture changes, with an 800 ms cooldown (`COOLDOWN_MS`).
+- Controls: Pinch is next slide, Fist is previous slide, Pointing moves a dot.
+- Hand position is mapped to screen pixels by multiplying normalized x, y by width and height.
+- The x value is flipped with `(1 - x)` because the camera view is mirrored.
+
+### Result
+
+A slideshow that changes with hand gestures, with a stable gesture label and a pointer dot that follows the index finger.
