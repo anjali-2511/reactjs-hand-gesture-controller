@@ -2,7 +2,7 @@
 
 - [x] Step 1: Project setup
 
-## Step 1: Project Setup (Completed)
+## Step 1: Project Setup  
 
 ### What was done
 
@@ -48,3 +48,25 @@ Accessed the webcam using `navigator.mediaDevices.getUserMedia()` and displayed 
 ### Result
 
 The live webcam feed appears on the page, with an error message if camera access is denied.
+
+
+
+- [x] Step 3: Add a canvas overlay
+
+## Step 3: Add a Canvas Overlay  
+
+### What was done
+
+Placed a `<canvas>` exactly on top of the webcam `<video>` and drew a test circle and line using the Canvas 2D API.
+
+### Key points
+
+- The parent div uses `position: relative`, and the video and canvas use `position: absolute` to stack.
+- Canvas `width` and `height` are set as attributes (not CSS) to avoid stretched drawings.
+- `getContext("2d")` gives the drawing tools: `arc()`, `moveTo()`, `lineTo()`, `fill()` and `stroke()`.
+- `clearRect()` clears the canvas, and will be used on every frame in the next step.
+- Both video and canvas are mirrored with `scaleX(-1)` so the drawings stay aligned with the video.
+
+### Result
+
+The webcam feed shows with a green circle and a red line drawn on top.
