@@ -70,3 +70,27 @@ Placed a `<canvas>` exactly on top of the webcam `<video>` and drew a test circl
 ### Result
 
 The webcam feed shows with a green circle and a red line drawn on top.
+
+- [x] Step 4: Detect the hand and draw 21 landmarks
+
+
+
+## Step 4: Detect the Hand  
+
+### What was done
+
+Loaded the MediaPipe Hand Landmarker in the browser and ran it on every webcam frame. The 21 hand landmarks and their connections are drawn live on the canvas overlay.
+
+### Key points
+
+- `FilesetResolver` loads the WebAssembly files, and `HandLandmarker.createFromOptions` loads the model.
+- `runningMode: "VIDEO"` is used for continuous frames, with `numHands: 1`.
+- `detectForVideo(video, timestamp)` returns 21 landmarks per hand with normalized x, y, z values (0 to 1).
+- `DrawingUtils` converts normalized values to pixels and draws the skeleton and dots.
+- The detection loop uses `requestAnimationFrame`, and only processes new video frames.
+- `useEffect` cleanup cancels the animation frame and closes the model.
+- Important landmark indexes: 0 wrist, 4 thumb tip, 8 index tip, 12 middle tip, 16 ring tip, 20 pinky tip.
+
+### Result
+
+A green hand skeleton with red points follows the hand in real time, and a status message shows whether a hand is detected.

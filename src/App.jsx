@@ -1,4 +1,9 @@
 import { useEffect, useRef, useState } from "react";
+import {
+  FilesetResolver,
+  HandLandmarker,
+  DrawingUtils,
+} from "@mediapipe/tasks-vision";
 
 const WIDTH = 640;
 const HEIGHT = 480;
@@ -7,6 +12,7 @@ function App() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [error, setError] = useState("");
+  const [status, setStatus] = useState("Loading hand model...");
 
   // Camera (from Step 2)
   useEffect(() => {
@@ -43,26 +49,86 @@ function App() {
     };
   }, []);
 
-  // Test drawing on the canvas
+  // Hand detection loop
   useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
+    let handLandmarker;
+    let animationId;
+    let cancelled = false;
+    let lastVideoTime = -1;
 
-    ctx.clearRect(0, 0, WIDTH, HEIGHT);
+    const ctx = canvasRef.current.getContext("2d");
+    const drawingUtils = new DrawingUtils(ctx);
 
-    // Green circle in the center
-    ctx.beginPath();
-    ctx.arc(WIDTH / 2, HEIGHT / 2, 20, 0, 2 * Math.PI);
-    ctx.fillStyle = "lime";
-    ctx.fill();
+    function detect() {
+      const video = videoRef.current;
 
-    // Red line across the screen
-    ctx.beginPath();
-    ctx.moveTo(0, HEIGHT / 2);
-    ctx.lineTo(WIDTH, HEIGHT / 2);
-    ctx.strokeStyle = "red";
-    ctx.lineWidth = 3;
-    ctx.stroke();
+      // Only process when the video has data and has a new frame
+      if (video && video.readyState >= 2 && video.currentTime !== lastVideoTime) {
+        lastVideoTime = video.currentTime;
+
+        const result = handLandmarker.detectForVideo(video, performance.now());
+
+        ctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+        if (result.landmarks.length > 0) {
+          setStatus("Hand detected");
+          for (const landmarks of result.landmarks) {
+            drawingUtils.drawConnectors(
+              landmarks,
+              HandLandmarker.HAND_CONNECTIONS,
+              { color: "#00ff88", lineWidth: 3 }
+            );
+            drawingUtils.drawLandmarks(landmarks, {
+              color: "#ff3b3b",
+              radius: 4,
+            });
+          }
+        } else {
+          setStatus("No hand detected");
+        }
+      }
+
+      animationId = requestAnimationFrame(detect);
+    }
+
+    async function setup() {
+      try {
+        const vision = await FilesetResolver.forVisionTasks(
+          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm"
+        );
+
+        handLandmarker = await HandLandmarker.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath:
+              "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+            delegate: "GPU",
+          },
+          runningMode: "VIDEO",
+          numHands: 1,
+        });
+
+        if (cancelled) {
+          handLandmarker.close();
+          return;
+        }
+
+        setStatus("Model ready. Show your hand!");
+        detect();
+      } catch (err) {
+        console.error(err);
+        setError("Could not load the hand detection model.");
+      }
+    }
+
+    setup();
+
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(animationId);
+      if (handLandmarker) {
+        handLandmarker.close();
+      }
+    };
   }, []);
 
   const mirror = { transform: "scaleX(-1)" };
@@ -72,6 +138,7 @@ function App() {
       <h1>Hand Gesture Controller</h1>
 
       {error && <p style={{ color: "red" }}>{error}</p>}
+      <p>{status}</p>
 
       <div
         style={{
